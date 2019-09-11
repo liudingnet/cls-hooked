@@ -9,9 +9,7 @@ global.async_hooks = async_hooks;
 const CONTEXTS_SYMBOL = 'cls@contexts';
 const ERROR_SYMBOL = 'error@context';
 
-const DEBUG_CLS_HOOKED = false;
-
-let currentUid = -1;
+const DEBUG_CLS_HOOKED = process.env.DEBUG_CLS_HOOKED;
 
 module.exports = {
   getNamespace: getNamespace,
@@ -286,7 +284,7 @@ function createNamespace(name) {
     debug2(`NS-CREATING NAMESPACE (${name})`);
   }
   let namespace = new Namespace(name);
-  namespace.id = currentUid;
+  namespace.id = async_hooks.executionAsyncId();
 
   const hook = async_hooks.createHook({
     init(asyncId, type, triggerId, resource) {
@@ -369,7 +367,7 @@ function createNamespace(name) {
         if (DEBUG_CLS_HOOKED) {
           const triggerId = async_hooks.triggerAsyncId();
           const indentStr = ' '.repeat(namespace._indent < 0 ? 0 : namespace._indent);
-          debug2(`${indentStr}BEFORE (${name}) asyncId:${asyncId} currentUid:${curId} triggerId:${triggerId} active:${util.inspect(context, {showHidden:true, depth:2, colors:true})} namespace._contexts:${util.inspect(namespace._contexts, {showHidden:true, depth:2, colors:true})}`);
+          debug2(`${indentStr}BEFORE (${name}) asyncId:${asyncId} currentUid:${curId} triggerId:${triggerId} active:${util.inspect(context, {showHidden:true, depth:2, colors:true})}`);
           namespace._indent += 2;
         }
 
@@ -378,7 +376,7 @@ function createNamespace(name) {
       } else if (DEBUG_CLS_HOOKED) {
         const triggerId = async_hooks.triggerAsyncId();
         const indentStr = ' '.repeat(namespace._indent < 0 ? 0 : namespace._indent);
-        debug2(`${indentStr}BEFORE MISSING CONTEXT (${name}) asyncId:${asyncId} currentUid:${curId} triggerId:${triggerId} namespace._contexts:${util.inspect(namespace._contexts, {showHidden:true, depth:2, colors:true})}`);
+        debug2(`${indentStr}BEFORE MISSING CONTEXT (${name}) asyncId:${asyncId} currentUid:${curId} triggerId:${triggerId}`);
         namespace._indent += 2;
       }
     },
@@ -403,7 +401,7 @@ function createNamespace(name) {
           const triggerId = async_hooks.triggerAsyncId();
           namespace._indent -= 2;
           const indentStr = ' '.repeat(namespace._indent < 0 ? 0 : namespace._indent);
-          debug2(`${indentStr}AFTER (${name}) asyncId:${asyncId} currentUid:${curId} triggerId:${triggerId} active:${util.inspect(context, {showHidden:true, depth:2, colors:true})} namespace._contexts:${util.inspect(namespace._contexts, {showHidden:true, depth:2, colors:true})}`);
+          debug2(`${indentStr}AFTER (${name}) asyncId:${asyncId} currentUid:${curId} triggerId:${triggerId} active:${util.inspect(context, {showHidden:true, depth:2, colors:true})}`);
         }
 
         namespace.exit(context);
@@ -412,7 +410,7 @@ function createNamespace(name) {
         const triggerId = async_hooks.triggerAsyncId();
         namespace._indent -= 2;
         const indentStr = ' '.repeat(namespace._indent < 0 ? 0 : namespace._indent);
-        debug2(`${indentStr}AFTER MISSING CONTEXT (${name}) asyncId:${asyncId} currentUid:${curId} triggerId:${triggerId} active:${util.inspect(context, {showHidden:true, depth:2, colors:true})} namespace._contexts:${util.inspect(namespace._contexts, {showHidden:true, depth:2, colors:true})}`);
+        debug2(`${indentStr}AFTER MISSING CONTEXT (${name}) asyncId:${asyncId} currentUid:${curId} triggerId:${triggerId} active:${util.inspect(context, {showHidden:true, depth:2, colors:true})}`);
       }
     },
     destroy(asyncId) {
@@ -421,7 +419,7 @@ function createNamespace(name) {
         let curId = async_hooks.executionAsyncId();
         const triggerId = async_hooks.triggerAsyncId();
         const indentStr = ' '.repeat(namespace._indent < 0 ? 0 : namespace._indent);
-        debug2(`${indentStr}DESTROY (${name}) currentUid:${curId} asyncId:${asyncId} triggerId:${triggerId} namespace._contexts:${util.inspect(namespace._contexts, {showHidden:true, depth:2, colors:true})}`);
+        debug2(`${indentStr}DESTROY (${name}) currentUid:${curId} asyncId:${asyncId} triggerId:${triggerId}`);
       }
     }
   });
